@@ -44,7 +44,7 @@ def get_next_workouts(config) -> Generator[models.Workout, None, None]:
         upcoming = r.html.find(".today, .future")
         for day in upcoming:
             if day.find(".workout"):
-                date = dateparser.parse(day.find(".title", first=True).text)
+                date = dateparser.parse(day.find(".title", first=True).text.splitlines()[-1])
                 workout_url = day.find(
                     ".workout a", first=True).absolute_links.pop()
                 yield get_workout(workout_url, date, config)
@@ -204,7 +204,7 @@ def parse_pace_range(min_provided: float, max_provided: float) -> models.PaceRan
 
 
 def parse_distance(text: str) -> models.Quantity:
-    match = re.search(r"\(~?([\d.]+ (mi|km))\)", text)
+    match = re.search(r"\(~?([\d.]+ (mi|k?m))\)", text)
     if not match:
         raise ValueError(f"No distance found in `{text}`")
     return models.ureg.parse_expression(match.group(1))
